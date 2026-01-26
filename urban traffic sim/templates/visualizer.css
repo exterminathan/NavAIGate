@@ -1,0 +1,61 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #0b0f14;
+  color: #e8eef7;
+}
+.toolbar {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: #111722;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+.toolbar button {
+  border: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  background: #1a2333;
+  color: #e8eef7;
+  cursor: pointer;
+}
+.toolbar button:hover {
+  background: #243149;
+}
+.toolbar .status {
+  margin-left: auto;
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+#canvas {
+  display: block;
+  width: 100vw;
+  height: calc(100vh - 48px);
+  background: radial-gradient(1200px 800px at 20% 10%, #0e1521, #0b0f14);
+}
+.legend {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot.nothing {
+  background: #9aa4b2;
+}
+.dot.stop {
+  background: #4aa3ff;
+}
+.dot.light {
+  background: #ff4d4d;
+}

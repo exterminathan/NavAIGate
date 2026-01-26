@@ -1,5 +1,4 @@
 import sys
-sys.path.insert(0, '../')
 from vehicle import Vehicle
 from graph import Graph, Node, Road
 from checks import *
@@ -42,13 +41,20 @@ def pass_intersection(vehicle, graph):
     Swap roads correctly etc.
     """
     next_node = graph.nodes[vehicle.path[0]]
+
+    # if final destination node
     if len(vehicle.path) == 1:
         vehicle.path.pop(0)
         vehicle.road.exit_road()
         return True
+    
+    # next road in graph
     road = graph.findEdge(next_node, graph.nodes[vehicle.path[1]])
+
+    # if road is clear, enter
     if road.queue[road.size - 1] == None:
         vehicle.road.exit_road()
+
         vehicle.current = graph.nodes[vehicle.path[0]].id
         vehicle.path.pop(0)
         vehicle.road = road
@@ -56,6 +62,11 @@ def pass_intersection(vehicle, graph):
         vehicle.pos = road.size - 1
         vehicle.time = 0
         vehicle.road.enter(vehicle)
+
+        # fix for when at intersection so vehicle does not stall
+        if vehicle.road.advance(vehicle.pos):
+            vehicle.pos -= 1
+
         return True
     vehicle.time += 1
     return True

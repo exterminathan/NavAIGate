@@ -11,12 +11,19 @@ class VehicleManager:
         self.remove_list  = []
         self.graph = graph
         self.vehicle_id = 0
+        self.num_vehicles = 15
 
     def update_vehicle_states(self):
         for vehicle in self.vehicles.values():
-            vehicle.update()  # Update vehicle state using its Behavior Tree
-            if not vehicle.path:
+            # if already marked as last, remove
+            if vehicle.is_finished:
                 self.remove_list.append(vehicle.id)
+                continue
+
+            vehicle.update()  # Update vehicle state using its Behavior Tree
+
+            if not vehicle.path:
+                vehicle.is_finished = True
         
         for vehicle_id in self.remove_list:
             self.vehicles.pop(f"{vehicle_id}")
@@ -25,7 +32,7 @@ class VehicleManager:
     def start_update_loop(self, interval=1):
         def loop():
             while True:
-                if len(self.vehicles) < 30:
+                if len(self.vehicles) < self.num_vehicles:
                     start_node = random.choice(list(self.graph.nodes.keys()))
                     goal_node = random.choice(list(self.graph.nodes.keys()))
                     while goal_node == start_node:

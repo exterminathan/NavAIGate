@@ -14,6 +14,7 @@ class Vehicle:
         self.path.pop(0)
         self.direction = self.road.direction
         self.time = 0
+        self.is_finished = False
 
     def graph_search(self, start, goal, graph):
         pathFound = False
@@ -61,10 +62,10 @@ class Vehicle:
     def get_coordinates(self, graph):
         # Calculate coordinates based on the road and position
         start_node = graph.nodes[self.current]  # Get start node
-        end_node = graph.nodes[vehicle.path[0]]  # Get end node
+        end_node = graph.nodes[self.path[0]]  # Get end node
         
         # Calculate position between start_node and end_node
-        t = self.pos / road.size  # Normalize position
+        t = self.pos / self.road.size  # Normalize position
         x = start_node.x + t * (end_node.x - start_node.x)
         y = start_node.y + t * (end_node.y - start_node.y)
         return (x, y)
@@ -82,5 +83,6 @@ class Vehicle:
             "path": self.path,
             "current": self.current,
             "road": self.road.id,
-            "time": self.time
+            "time": self.time,
+            "is_finished": self.is_finished
         }

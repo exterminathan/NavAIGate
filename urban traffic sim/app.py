@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask import render_template
 from graph import Graph, Direction
 from math import sqrt
 from vehicle import Vehicle
@@ -72,7 +73,11 @@ for edge in edges:
 
 # Initialize the VehicleManager and start its update loop
 vehicle_manager = VehicleManager(graph)
-vehicle_manager.start_update_loop()
+vehicle_manager.start_update_loop(interval=.4)
+
+@app.route('/')
+def index():
+    return render_template('visualizer.html')
 
 @app.route('/graph')
 def get_graph():
@@ -114,3 +119,4 @@ def update_traffic_lights():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    # http://127.0.0.1:5000/
