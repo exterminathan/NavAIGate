@@ -11,7 +11,7 @@ class VehicleManager:
         self.remove_list  = []
         self.graph = graph
         self.vehicle_id = 0
-        self.num_vehicles = 15
+        self.num_vehicles = 30
 
     def update_vehicle_states(self):
         for vehicle in self.vehicles.values():

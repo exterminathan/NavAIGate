@@ -8,11 +8,22 @@ const API = {
   stepLights: `${API_BASE}/update_traffic_lights`,
 };
 const NODE_TYPES = ["nothing", "stop_sign", "traffic_light"];
+const POLL_MS = 20; // tick rate for vehicles
+const GRAPH_REFRESH_MS = 2000; // refresh graph occasionally (safe & light)
+
+
+// IMPORTANT DATA
 const TRAFFIC_TIMER = 5; // Seconds between traffic light switches
 const LANE_OFFSET = 3;
 const VEHICLE_GAP = 15;
-const POLL_MS = 20; // tick rate for vehicles
-const GRAPH_REFRESH_MS = 2000; // refresh graph occasionally (safe & light)
+// ------------------
+
+
+
+
+
+
+
 
 // ---------- State ----------
 let graph = { nodes: {}, roads: {} };
@@ -237,7 +248,7 @@ function draw() {
     const age = performance.now() - apperanceTimes[v.id];
     const isNew = age < 1000;
 
-    if (isNew || v.is_finished) ctx.rotate(angle + Math.PI/4);
+    if (isNew || v.is_finished) ctx.rotate(angle + Math.PI / 4);
     else ctx.rotate(angle);
 
     // vehicle size and color
@@ -249,7 +260,7 @@ function draw() {
 
 
     ctx.restore();
-    
+
   }
 }
 
