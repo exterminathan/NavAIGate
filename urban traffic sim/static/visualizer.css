@@ -45,8 +45,8 @@ body {
   align-items: center;
 }
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   display: inline-block;
 }
@@ -58,4 +58,53 @@ body {
 }
 .dot.light {
   background: #ff4d4d;
+}
+
+.clock-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid #243149;
+}
+.clock-face {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #4aa3ff;
+  border-radius: 50%;
+  position: relative;
+}
+.clock-hand {
+  width: 2px;
+  height: 8px;
+  background: #4aa3ff;
+  position: absolute;
+  top: 2px;
+  left: 9px; /* Centered: (20px width / 2) - (2px hand / 2) */
+  transform-origin: bottom center;
+  transform: rotate(0deg);
+}
+
+/* Vertical Legend Box */
+.legend-box {
+  position: absolute;
+  top: 60px; /* Just below the toolbar */
+  left: 15px;
+  background: rgba(17, 23, 34, 0.85);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #243149;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 5;
+  pointer-events: none; /* Prevents blocking clicks on nodes behind it */
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: #e8eef7;
 }

@@ -8,6 +8,9 @@ const API = {
   stepLights: `${API_BASE}/update_traffic_lights`,
 };
 const NODE_TYPES = ["nothing", "stop_sign", "traffic_light"];
+const TRAFFIC_TIMER = 5; // Seconds between traffic light switches
+const LANE_OFFSET = 3;
+const VEHICLE_GAP = 15;
 const POLL_MS = 20; // tick rate for vehicles
 const GRAPH_REFRESH_MS = 2000; // refresh graph occasionally (safe & light)
 
@@ -15,6 +18,9 @@ const GRAPH_REFRESH_MS = 2000; // refresh graph occasionally (safe & light)
 let graph = { nodes: {}, roads: {} };
 let vehicles = [];
 let lastGraphFetch = 0;
+let clockTime = 0;
+let lastTick = performance.now();
+let apperanceTimes = {};
 
 // drawing state
 const canvas = document.getElementById("canvas");
@@ -134,21 +140,31 @@ function draw() {
     const a = graph.nodes[r.entrance];
     const b = graph.nodes[r.exit];
     if (!a || !b) continue;
+
     const p1 = worldToScreen(a.x, a.y);
     const p2 = worldToScreen(b.x, b.y);
+
+    //offset for double rads
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    const angle = Math.atan2(dy, dx);
+
+    const xOff = Math.cos(angle + Math.PI / 2) * LANE_OFFSET;
+    const yOff = Math.sin(angle + Math.PI / 2) * LANE_OFFSET;
+
     ctx.beginPath();
-    ctx.moveTo(p1.x, p1.y);
-    ctx.lineTo(p2.x, p2.y);
+    ctx.moveTo(p1.x + xOff, p1.y + yOff);
+    ctx.lineTo(p2.x + xOff, p2.y + yOff);
     ctx.stroke();
+
     // direction arrow
-    const dx = p2.x - p1.x,
-      dy = p2.y - p1.y;
     const len = Math.hypot(dx, dy) || 1;
-    const ux = dx / len,
-      uy = dy / len;
-    const mx = p1.x + dx * 0.5,
-      my = p1.y + dy * 0.5;
+    const ux = dx / len;
+    const uy = dy / len;
+    const mx = p1.x + dx * 0.5;
+    const my = p1.y + dy * 0.5;
     const arrow = 6;
+
     ctx.beginPath();
     ctx.moveTo(mx, my);
     ctx.lineTo(mx - uy * arrow, my + ux * arrow);
@@ -162,7 +178,7 @@ function draw() {
   for (const id in graph.nodes) {
     const n = graph.nodes[id];
     const p = worldToScreen(n.x, n.y);
-    const r = 7;
+    const r = 9;
     let fill = "#9aa4b2";
     if (n.type === "stop_sign") fill = "#4aa3ff";
     if (n.type === "traffic_light") fill = "#ff4d4d";
@@ -188,31 +204,52 @@ function draw() {
     const b = graph.nodes[road.exit];
     if (!a || !b) continue;
 
-    // position along road from tail -> head based on queue index
+    const p1 = worldToScreen(a.x, a.y);
+    const p2 = worldToScreen(b.x, b.y);
+
+    //lane offset
+    const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+    const xOff = Math.cos(angle + Math.PI / 2) * LANE_OFFSET;
+    const yOff = Math.sin(angle + Math.PI / 2) * LANE_OFFSET;
+
+
+
+    // path margin
+    const nodeMargin = v.is_finished ? 0 : 15;
+    const roadLen = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+
+    const marginT = nodeMargin / roadLen;
     const N = Math.max(1, road.size);
-    // v.pos is 0 at head;
-    const margin = 0.15;
     const rawT = N === 1 ? 1 : 1 - v.pos / (N - 1);
+    const t = marginT + rawT * (1 - 2 * marginT);
 
-    const t = rawT;
+    // current interpolated position
+    const px = p1.x + (p2.x - p1.x) * t + xOff;
+    const py = p1.y + (p2.y - p1.y) * t + yOff;
 
-    const x = a.x + (b.x - a.x) * t;
-    const y = a.y + (b.y - a.y) * t;
-    const p = worldToScreen(x, y);
+    // save ctx
+    ctx.save();
+    ctx.translate(px, py);
 
-    const baseSize = 6;
-    const sz = v.is_finished ? baseSize * 2 : baseSize;
 
-    ctx.fillStyle = v.is_finished ? "#ffff00" : "#e8eef7";
+    //check appear time to notify
+    apperanceTimes[v.id] ??= performance.now();
+    const age = performance.now() - apperanceTimes[v.id];
+    const isNew = age < 1000;
 
-    ctx.fillRect(p.x - sz / 2, p.y - sz / 2, sz, sz);
+    if (isNew || v.is_finished) ctx.rotate(angle + Math.PI/4);
+    else ctx.rotate(angle);
 
-    //opt glow
-    if (v.is_finished) {
-      ctx.strokeStyle = "fff";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(p.x - sz / 2, p.y - sz / 2, sz, sz);
-    }
+    // vehicle size and color
+    const baseSize = 9;
+    const sz = isNew ? baseSize * 1.75 : v.is_finished ? baseSize * 1.5 : baseSize;
+
+    ctx.fillStyle = isNew ? "#ff9100ff" : v.is_finished ? "#00ff00ff" : v.color;
+    ctx.fillRect(- sz / 2, - sz / 2, sz, sz);
+
+
+    ctx.restore();
+    
   }
 }
 
@@ -253,20 +290,20 @@ canvas.addEventListener("click", async (e) => {
   }
 });
 
-document.getElementById("btnStepLights").addEventListener("click", async () => {
-  try {
-    setStatus("Stepping lights…");
-    await stepAllLights();
-    setStatus("Lights advanced");
-  } catch (e) {
-    console.error(e);
-    setStatus("Failed to advance lights");
-  }
-});
+// document.getElementById("btnStepLights").addEventListener("click", async () => {
+//   try {
+//     setStatus("Stepping lights…");
+//     await stepAllLights();
+//     setStatus("Lights advanced");
+//   } catch (e) {
+//     console.error(e);
+//     setStatus("Failed to advance lights");
+//   }
+// });
 
-document.getElementById("btnFit").addEventListener("click", () => {
-  fitView();
-});
+// document.getElementById("btnFit").addEventListener("click", () => {
+//   fitView();
+// });
 
 // ---------- Loop ----------
 function setStatus(s) {
@@ -274,9 +311,28 @@ function setStatus(s) {
 }
 
 async function tick() {
+  const now = performance.now();
+  const dt = (now - lastTick) / 1000;
+  lastTick = now;
+
   try {
-    // refresh graph occasionally (in case server-side changes occur)
-    if (performance.now() - lastGraphFetch > GRAPH_REFRESH_MS) {
+    // update clock
+    clockTime += dt;
+
+    const progress = (clockTime % TRAFFIC_TIMER) / TRAFFIC_TIMER;
+    const rotation = progress * 360;
+    document.getElementById("clockHand").style.transform =
+      `rotate(${rotation}deg)`;
+    document.getElementById("clockLabel").textContent =
+      `${Math.ceil(TRAFFIC_TIMER - (clockTime % TRAFFIC_TIMER))}s`;
+
+    if (clockTime >= TRAFFIC_TIMER) {
+      clockTime = 0;
+      await stepAllLights();
+    }
+
+    // refresh graph occasionally
+    if (now - lastGraphFetch > GRAPH_REFRESH_MS) {
       await fetchGraph();
       fitView();
     }

@@ -13,8 +13,8 @@ def log_execution(fn):
 
 ############################### Base Classes ##################################
 class Node:
-    def __init__(self):
-        raise NotImplementedError
+    def __init__(self, node_id):
+        self.id = node_id
 
     def execute(self):
         raise NotImplementedError

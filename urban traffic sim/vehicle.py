@@ -1,8 +1,12 @@
+import itertools
 from graph import Graph
 from heapq import heappop, heappush
 from math import sqrt
+import random
 
 class Vehicle:
+    _counter = itertools.count()
+
     def __init__(self, id, start, goal, graph):
         self.id = id
         self.bt = None
@@ -15,11 +19,15 @@ class Vehicle:
         self.direction = self.road.direction
         self.time = 0
         self.is_finished = False
+        r = random.randint(100, 230)
+        g = random.randint(100, 230)
+        b = random.randint(100, 230)
+        self.color = "#{:02x}{:02x}{:02x}".format(r, g, b)
 
     def graph_search(self, start, goal, graph):
         pathFound = False
         frontier = []
-        heappush(frontier, (0, start))
+        heappush(frontier, (0, next(self._counter), start))
 
         prev_node = dict()
         prev_node[start.id] = None
@@ -27,18 +35,19 @@ class Vehicle:
         pathcost[start.id] = 0
 
         while frontier:
-            priority, current = heappop(frontier)
-            if current == goal:
+            priority, _, current = heappop(frontier)
+            if current.id == goal.id:
                 pathFound = True
                 break
-            for neighbor in graph.neighbors(current):
-                neighbor_cost, next = neighbor[0], neighbor[1]
-                new_cost = pathcost[current.id] + neighbor_cost
-                if next.id not in pathcost or new_cost < pathcost[next.id]:
-                    pathcost[next.id] = new_cost
-                    priority = new_cost + self.heuristic(goal, next)
-                    heappush(frontier, (priority, next))
-                    prev_node[next.id] = current
+
+            for neighbor_size, neighbor_node in graph.neighbors(current):
+                new_cost = pathcost[current.id] + neighbor_size
+
+                if neighbor_node.id not in pathcost or new_cost < pathcost[neighbor_node.id]:
+                    pathcost[neighbor_node.id] = new_cost
+                    priority = new_cost + self.heuristic(goal, neighbor_node)
+                    heappush(frontier, (priority, next(self._counter), neighbor_node))
+                    prev_node[neighbor_node.id] = current
         
         if pathFound:
             current = goal
@@ -84,5 +93,6 @@ class Vehicle:
             "current": self.current,
             "road": self.road.id,
             "time": self.time,
-            "is_finished": self.is_finished
+            "is_finished": self.is_finished,
+            "color": self.color
         }

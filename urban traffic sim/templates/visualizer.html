@@ -1,22 +1,32 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Traffic Simulator Visualizer</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='visualizer.css') }}" /></head>
-<body>
-  <div class="toolbar">
-    <div class="legend">
-      <span class="dot nothing"></span> nothing
-      <span class="dot stop"></span> stop_sign
-      <span class="dot light"></span> traffic_light
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Traffic Simulator Visualizer</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='visualizer.css') }}"
+    />
+  </head>
+  <body>
+    <div class="toolbar">
+      <div class="status" id="status">loading…</div>
+      <div class="clock-container" title="Traffic light cycle timer">
+        <div class="clock-face">
+          <div id="clockHand" class="clock-hand"></div>
+        </div>
+        <span id="clockLabel" style="font-size: 0.8rem; width: 25px">0s</span>
+      </div>
     </div>
-    <button id="btnStepLights" title="Advance all traffic lights one step on the server">Advance Lights</button>
-    <button id="btnFit" title="Refit graph to viewport">Fit</button>
-    <div class="status" id="status">loading…</div>
-  </div>
-  <canvas id="canvas"></canvas>
-  <script src="{{ url_for('static', filename='visualizer.js') }}"></script>
-</body>
+
+    <div class="legend-box">
+      <div class="legend-item"><span class="dot nothing"></span> N/A</div>
+      <div class="legend-item"><span class="dot stop"></span> Stop Sign</div>
+      <div class="legend-item"><span class="dot light"></span> Traffic Light </div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+    <script src="{{ url_for('static', filename='visualizer.js') }}"></script>
+  </body>
 </html>

@@ -40,6 +40,15 @@ def pass_intersection(vehicle, graph):
     Attempt to Drive through an intersection.
     Swap roads correctly etc.
     """
+
+    # pre-check for if at final node to exit early
+    if len(vehicle.path) <= 1:
+        if vehicle.road:
+            vehicle.road.exit_road()
+        vehicle.path = []
+        return True
+
+
     next_node = graph.nodes[vehicle.path[0]]
 
     # if final destination node
