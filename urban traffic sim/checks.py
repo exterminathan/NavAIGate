@@ -2,6 +2,7 @@ from graph import Graph, Node, Road, Direction
 
 lights = ["RedLight", "YellowLight", "GreenLight", "YellowLight"]
 
+# USED
 def front_of_queue(vehicle, graph):
     """
     Returns true if vehicle is at front of queue
@@ -20,11 +21,6 @@ def get_traffic_light_RY(vehicle, graph):
     """
     if vehicle.path:
         next_node = graph.nodes[vehicle.path[0]]
-        """
-        road = graph.findEdge(vehicle.current, next_node)
-        if road and road.roadType in ["RedLight", "YellowLight", "GreenLight"]:
-            return road.roadType
-        """
         if next_node.nodeType == "traffic_light":
             light_color = lights[next_node.pattern[vehicle.direction.value]]
             if light_color == "RedLight" or light_color == "YellowLight":
@@ -39,11 +35,6 @@ def get_traffic_light_green(vehicle, graph):
     """
     if vehicle.path:
         next_node = graph.nodes[vehicle.path[0]]
-        """
-        road = graph.findEdge(vehicle.current, next_node)
-        if road and road.roadType in ["RedLight", "YellowLight", "GreenLight"]:
-            return road.roadType
-        """
         if next_node.nodeType == "traffic_light":
             light_color = lights[next_node.pattern[vehicle.direction.value]]
             return light_color == "GreenLight"
@@ -57,11 +48,7 @@ def check_empty_intersection(vehicle, graph):
     """
     if vehicle.path:
         next_node = graph.nodes[vehicle.path[0]]
-        """
-        road = graph.findEdge(vehicle.current, next_node)
-        if road and road.roadType in ["RedLight", "YellowLight", "GreenLight"]:
-            return road.roadType
-        """
+
         if next_node.nodeType == "nothing":
             return True
     return False
@@ -72,11 +59,7 @@ def has_stop_sign(vehicle, graph):
     """
     if vehicle.path:
         next_node = graph.nodes[vehicle.path[0]]
-        """
-        road = graph.findEdge(vehicle.current, next_node)
-        if road and road.roadType == "StopSign":
-            return True
-        """
+
         if next_node.nodeType == "stop_sign":
             return True
     return False
@@ -115,8 +98,7 @@ def check_rhs(vehicle, graph):
             return road.queue[0] is not None
     
     return False
-    
-    
+
 def check_lhs(vehicle, graph):
     """
     Checks the road to the vehicle's left
@@ -128,6 +110,17 @@ def check_lhs(vehicle, graph):
     
     return False
 
+def has_not_stopped(vehicle, graph):
+    return vehicle.time == 0
+
+def is_at_intersection(vehicle, graph):
+    current_node = graph.nodes[vehicle.path[0]] if vehicle.path else None
+    if current_node and current_node.nodeType in ["traffic_light", "stop_sign"]:
+        return True
+    return False
+
+
+## UNUSED
 def is_intersection_clear(vehicle, graph):
     """
     Checks if intersection is clear after stop sign
@@ -140,9 +133,6 @@ def is_intersection_clear(vehicle, graph):
 def has_fully_stopped(vehicle):
     return vehicle.speed == 0
 
-def has_not_stopped(vehicle, graph):
-    return vehicle.time == 0
-
 def is_road_busy(vehicle, graph, threshold=0.8):
     next_node = vehicle.path[0] if vehicle.path else None
     if next_node:
@@ -151,16 +141,3 @@ def is_road_busy(vehicle, graph, threshold=0.8):
             congestion_ratio = len([v for v in road.queue if v]) / road.size
             return congestion_ratio >= threshold
     return False
-
-def is_at_intersection(vehicle, graph):
-    current_node = graph.nodes[vehicle.path[0]] if vehicle.path else None
-    if current_node and current_node.nodeType in ["traffic_light", "stop_sign"]:
-        return True
-    return False
-
-
-
-# Alternate Checks
-# because im dumb
-def is_intersection_clear_after_stop(vehicle, graph):
-    return is_intersection_clear(vehicle, graph) and has_fully_stopped(vehicle)
